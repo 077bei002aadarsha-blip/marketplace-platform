@@ -150,9 +150,8 @@ export default function CheckoutPage() {
                       {item.product.name} × {item.quantity}
                     </span>
                     <span className="font-medium">
-                      ₹
-                      {(parseFloat(item.product.price) * item.quantity).toLocaleString(
-                        "en-IN"
+                      Rs. {(parseFloat(item.product.price) * item.quantity).toLocaleString(
+                        "en-NP"
                       )}
                     </span>
                   </div>
@@ -163,19 +162,19 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">
-                    ₹{parseFloat(cart.subtotal).toLocaleString("en-IN")}
+                    Rs. {parseFloat(cart.subtotal).toLocaleString("en-NP")}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Estimated Tax (18%)</span>
                   <span className="font-medium">
-                    ₹{estimatedTax.toLocaleString("en-IN")}
+                    Rs. {estimatedTax.toLocaleString("en-NP")}
                   </span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>₹{total.toLocaleString("en-IN")}</span>
+                    <span>Rs. {total.toLocaleString("en-NP")}</span>
                   </div>
                 </div>
               </div>

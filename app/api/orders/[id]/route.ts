@@ -35,22 +35,32 @@ export async function GET(
     }
 
     // Get order items with product details
-    const items = await db
+    const orderItemsData = await db
       .select({
         id: orderItems.id,
         orderId: orderItems.orderId,
         productId: orderItems.productId,
         quantity: orderItems.quantity,
         priceAtPurchase: orderItems.priceAtPurchase,
-        product: {
-          id: products.id,
-          name: products.name,
-          imageUrl: products.imageUrl,
-        },
+        productName: products.name,
+        productImageUrls: products.imageUrls,
       })
       .from(orderItems)
       .innerJoin(products, eq(orderItems.productId, products.id))
       .where(eq(orderItems.orderId, id));
+
+    const items = orderItemsData.map(item => ({
+      id: item.id,
+      orderId: item.orderId,
+      productId: item.productId,
+      quantity: item.quantity,
+      priceAtPurchase: item.priceAtPurchase,
+      product: {
+        id: item.productId,
+        name: item.productName,
+        imageUrl: (item.productImageUrls as string[])[0] || "/placeholder.jpg",
+      },
+    }));
 
     return NextResponse.json({
       order: {

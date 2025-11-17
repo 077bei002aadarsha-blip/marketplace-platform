@@ -147,13 +147,12 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-blue-600">
-                    ₹
-                    {(
+                    Rs. {(
                       parseFloat(item.priceAtPurchase) * item.quantity
-                    ).toLocaleString("en-IN")}
+                    ).toLocaleString("en-NP")}
                   </p>
                   <p className="text-sm text-gray-600">
-                    ₹{parseFloat(item.priceAtPurchase).toLocaleString("en-IN")}{" "}
+                    Rs. {parseFloat(item.priceAtPurchase).toLocaleString("en-NP")}{" "}
                     each
                   </p>
                 </div>

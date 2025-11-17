@@ -11,6 +11,7 @@ const SALT_ROUNDS = 12;
 export interface JWTPayload {
   userId: string;
   email: string;
+  id: string;
 }
 
 // Password utilities

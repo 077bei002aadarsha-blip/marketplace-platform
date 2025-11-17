@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
@@ -163,10 +164,14 @@ export default function ProductsPage() {
                 href={`/products/${product.id}`}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
               >
-                <div className="aspect-square bg-gray-200 relative">
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                    Image
-                  </div>
+                <div className="aspect-square bg-gray-200 relative overflow-hidden">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
@@ -177,7 +182,7 @@ export default function ProductsPage() {
                   </p>
                   <div className="flex justify-between items-center">
                     <p className="text-xl font-bold text-blue-600">
-                      ₹{parseFloat(product.price).toLocaleString("en-IN")}
+                      Rs. {parseFloat(product.price).toLocaleString("en-NP")}
                     </p>
                     {product.stockQuantity > 0 ? (
                       <span className="text-xs text-green-600">In Stock</span>

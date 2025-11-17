@@ -1,5 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ShoppingBag, Shield, TruckIcon } from "lucide-react";
+
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  imageUrl: string;
+}
 
 async function getFeaturedProducts() {
   try {
@@ -25,11 +33,11 @@ export default async function Home() {
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-                        <h1 className="text-5xl font-bold text-gray-800 mb-4">
+                        <h1 className="text-5xl font-bold text-white mb-4">
               Discover Authentic Nepalese Fashion
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Premium sarees, jewelry, and traditional clothing
+              Premium jewelry, traditional clothing, and handcrafted accessories
             </p>
             <Link
               href="/products"
@@ -83,9 +91,8 @@ export default async function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">
             Shop by Category
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {[
-              { name: "Sarees", href: "/products?category=saree" },
               { name: "Jewelry", href: "/products?category=jewelry" },
               { name: "Clothing", href: "/products?category=clothing" },
               { name: "Accessories", href: "/products?category=accessories" },
@@ -117,23 +124,27 @@ export default async function Home() {
           </div>
           {featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product: any) => (
+              {featuredProducts.map((product: Product) => (
                 <Link
                   key={product.id}
                   href={`/products/${product.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
                 >
-                  <div className="aspect-square bg-gray-200 relative">
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                      Image
-                    </div>
+                  <div className="aspect-square bg-gray-200 relative overflow-hidden">
+                    <Image
+                      src={product.imageUrl}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
                       {product.name}
                     </h3>
                     <p className="text-xl font-bold text-blue-600">
-                      ₹{parseFloat(product.price).toLocaleString("en-IN")}
+                      Rs. {parseFloat(product.price).toLocaleString("en-NP")}
                     </p>
                   </div>
                 </Link>

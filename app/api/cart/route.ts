@@ -32,22 +32,34 @@ export async function GET() {
     }
 
     // Get cart items with product details
-    const items = await db
+    const cartItemsData = await db
       .select({
         id: cartItems.id,
         quantity: cartItems.quantity,
         addedAt: cartItems.addedAt,
-        product: {
-          id: products.id,
-          name: products.name,
-          price: products.price,
-          imageUrl: products.imageUrl,
-          stockQuantity: products.stockQuantity,
-        },
+        productId: products.id,
+        productName: products.name,
+        productPrice: products.price,
+        productImageUrls: products.imageUrls,
+        productStock: products.stockQuantity,
       })
       .from(cartItems)
       .innerJoin(products, eq(cartItems.productId, products.id))
       .where(eq(cartItems.cartId, cart.id));
+
+    // Map to expected format
+    const items = cartItemsData.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      addedAt: item.addedAt,
+      product: {
+        id: item.productId,
+        name: item.productName,
+        price: item.productPrice,
+        imageUrl: (item.productImageUrls as string[])[0] || "/placeholder.jpg",
+        stockQuantity: item.productStock,
+      },
+    }));
 
     // Calculate subtotal
     const subtotal = items.reduce(

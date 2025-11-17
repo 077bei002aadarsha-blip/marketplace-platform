@@ -73,7 +73,7 @@ export default function OrdersPage() {
 
                   <div className="text-right">
                     <p className="text-2xl font-bold text-blue-600">
-                      ₹{parseFloat(order.totalAmount).toLocaleString("en-IN")}
+                      Rs. {parseFloat(order.totalAmount).toLocaleString("en-NP")}
                     </p>
                     <span className="inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
                       {order.status}

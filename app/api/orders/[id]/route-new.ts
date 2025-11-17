@@ -48,7 +48,7 @@ export async function GET(
         product: {
           id: products.id,
           name: products.name,
-          imageUrl: products.imageUrl,
+          imageUrl: products.imageUrls,
         },
       })
       .from(orderItems)

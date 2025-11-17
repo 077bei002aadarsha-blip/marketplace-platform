@@ -124,23 +124,24 @@ const sampleProducts = [
   },
 ];
 
-async function seed() {
+async function reseed() {
   try {
-    console.log("Seeding database...");
-
-    // Insert products
+    console.log("Clearing existing products...");
+    await db.delete(products);
+    
+    console.log("Seeding database with new products...");
     await db.insert(products).values(sampleProducts);
 
-    console.log("✅ Database seeded successfully!");
-    console.log(`Added ${sampleProducts.length} products`);
+    console.log("✅ Database reseeded successfully!");
+    console.log(`Added ${sampleProducts.length} male-focused Nepalese products`);
     
     await client.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error seeding database:", error);
+    console.error("❌ Error reseeding database:", error);
     await client.end();
     process.exit(1);
   }
 }
 
-seed();
+reseed();

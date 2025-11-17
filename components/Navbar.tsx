@@ -8,7 +8,8 @@ import { ShoppingCart, User, LogOut, Menu, X } from "lucide-react";
 interface User {
   id: string;
   email: string;
-  fullName: string;
+  name: string;
+  role: string;
 }
 
 export default function Navbar() {
@@ -71,12 +72,13 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-blue-600">Luga</span>
+          <Link href="/" className="flex items-center space-x-2 group">
+            <span className="text-2xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors">Luga</span>
+            <span className="text-xs text-gray-500 hidden sm:block">Nepal</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -85,29 +87,29 @@ export default function Navbar() {
               href="/products"
               className={`${
                 pathname === "/products"
-                  ? "text-blue-600"
+                  ? "text-blue-600 font-semibold"
                   : "text-gray-700 hover:text-blue-600"
-              } transition-colors`}
+              } transition-colors font-medium`}
             >
               Products
             </Link>
             <Link
-              href="/products?category=saree"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              Sarees
-            </Link>
-            <Link
               href="/products?category=jewelry"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
               Jewelry
             </Link>
             <Link
               href="/products?category=clothing"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
               Clothing
+            </Link>
+            <Link
+              href="/products?category=accessories"
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+            >
+              Accessories
             </Link>
           </div>
 
@@ -134,9 +136,17 @@ export default function Navbar() {
                 >
                   Orders
                 </Link>
+                {user.role === "vendor" && (
+                  <Link
+                    href="/vendor/dashboard"
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    Vendor Dashboard
+                  </Link>
+                )}
                 <div className="flex items-center space-x-2">
                   <User className="w-5 h-5 text-gray-700" />
-                  <span className="text-sm text-gray-700">{user.fullName}</span>
+                  <span className="text-sm text-gray-700">{user.name}</span>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -156,7 +166,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-md font-medium"
                 >
                   Register
                 </Link>
@@ -179,31 +189,31 @@ export default function Navbar() {
             <div className="flex flex-col space-y-4">
               <Link
                 href="/products"
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-blue-600 font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Products
               </Link>
               <Link
-                href="/products?category=saree"
-                className="text-gray-700 hover:text-blue-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Sarees
-              </Link>
-              <Link
                 href="/products?category=jewelry"
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-blue-600 font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Jewelry
               </Link>
               <Link
                 href="/products?category=clothing"
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-blue-600 font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Clothing
+              </Link>
+              <Link
+                href="/products?category=accessories"
+                className="text-gray-700 hover:text-blue-600 font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Accessories
               </Link>
               {user ? (
                 <>
@@ -221,8 +231,17 @@ export default function Navbar() {
                   >
                     Orders
                   </Link>
+                  {user.role === "vendor" && (
+                    <Link
+                      href="/vendor/dashboard"
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg text-center font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Vendor Dashboard
+                    </Link>
+                  )}
                   <div className="text-sm text-gray-700 pt-2 border-t">
-                    {user.fullName}
+                    {user.name}
                   </div>
                   <button
                     onClick={() => {

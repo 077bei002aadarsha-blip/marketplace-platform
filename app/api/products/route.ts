@@ -71,8 +71,14 @@ export async function GET(request: NextRequest) {
       .from(products)
       .where(and(...filters));
 
+    // Transform products to include imageUrl from imageUrls array
+    const transformedProducts = productList.map(product => ({
+      ...product,
+      imageUrl: (product.imageUrls as string[])?.[0] || "/placeholder.jpg"
+    }));
+
     return NextResponse.json({
-      products: productList,
+      products: transformedProducts,
       pagination: {
         page,
         limit,

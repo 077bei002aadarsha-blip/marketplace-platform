@@ -36,9 +36,20 @@ export async function GET(
       )
       .limit(4);
 
+    // Transform products to include imageUrl from imageUrls array
+    const transformedProduct = {
+      ...product,
+      imageUrl: (product.imageUrls as string[])?.[0] || "/placeholder.jpg"
+    };
+
+    const transformedRelatedProducts = relatedProducts.map(p => ({
+      ...p,
+      imageUrl: (p.imageUrls as string[])?.[0] || "/placeholder.jpg"
+    }));
+
     return NextResponse.json({
-      product,
-      relatedProducts,
+      product: transformedProduct,
+      relatedProducts: transformedRelatedProducts,
     });
   } catch (error) {
     console.error("Get product error:", error);

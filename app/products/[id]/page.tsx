@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ShoppingCart, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Product {
   id: string;
@@ -107,8 +108,15 @@ export default function ProductDetailPage() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Image */}
-            <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-              <span className="text-gray-400 text-lg">Product Image</span>
+            <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden relative">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
 
             {/* Details */}
@@ -117,7 +125,7 @@ export default function ProductDetailPage() {
                 {product.name}
               </h1>
               <p className="text-3xl font-bold text-blue-600 mb-6">
-                ₹{parseFloat(product.price).toLocaleString("en-IN")}
+                Rs. {parseFloat(product.price).toLocaleString("en-NP")}
               </p>
               <p className="text-gray-700 mb-6">{product.description}</p>
 
@@ -197,15 +205,21 @@ export default function ProductDetailPage() {
                   href={`/products/${relatedProduct.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
                 >
-                  <div className="aspect-square bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Image</span>
+                  <div className="aspect-square bg-gray-200 relative overflow-hidden">
+                    <Image
+                      src={relatedProduct.imageUrl}
+                      alt={relatedProduct.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
                       {relatedProduct.name}
                     </h3>
                     <p className="text-xl font-bold text-blue-600">
-                      ₹{parseFloat(relatedProduct.price).toLocaleString("en-IN")}
+                      Rs. {parseFloat(relatedProduct.price).toLocaleString("en-NP")}
                     </p>
                   </div>
                 </Link>
