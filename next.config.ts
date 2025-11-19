@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false, // Disable to reduce hydration warnings
   images: {
     remotePatterns: [
       {
@@ -9,7 +10,14 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
+    unoptimized: process.env.NODE_ENV === 'development', // Prevent style mismatches in dev
   },
 };
 

@@ -11,7 +11,7 @@ const productSchema = z.object({
   price: z.string(),
   stockQuantity: z.number().int().min(0, "Stock cannot be negative"),
   category: z.string().min(1, "Category is required"),
-  imageUrl: z.string().url("Invalid image URL"),
+  imageUrls: z.array(z.string().url()).min(1, "At least one image is required"),
 });
 
 export async function GET() {
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
         price: validatedData.price,
         stockQuantity: validatedData.stockQuantity,
         category: validatedData.category,
-        imageUrls: [validatedData.imageUrl],
+        imageUrls: validatedData.imageUrls,
         vendorId: vendor.id,
       })
       .returning();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 export default function NewProduct() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function NewProduct() {
     price: "",
     stockQuantity: "",
     category: "",
-    imageUrl: "",
+    imageUrls: [] as string[],
   });
 
   const categories = [
@@ -34,6 +35,10 @@ export default function NewProduct() {
     setError("");
 
     try {
+      if (formData.imageUrls.length === 0) {
+        throw new Error("Please upload at least one product image");
+      }
+
       const response = await fetch("/api/vendor/products", {
         method: "POST",
         headers: {
@@ -198,22 +203,19 @@ export default function NewProduct() {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Product Images */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Image URL *
+                Product Images *
               </label>
-              <input
-                type="url"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="https://example.com/image.jpg"
+              <ImageUpload
+                value={formData.imageUrls}
+                onChange={(urls) => setFormData({ ...formData, imageUrls: urls })}
+                maxImages={5}
+                disabled={loading}
               />
-              <p className="text-sm text-gray-500 mt-1">
-                Provide a direct link to your product image
+              <p className="text-sm text-gray-500 mt-2">
+                Upload up to 5 images. First image will be the primary display image.
               </p>
             </div>
 
