@@ -68,31 +68,31 @@ export default function VendorProducts() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading products...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading products...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               My Products
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Manage your product listings
             </p>
           </div>
           <Link
             href="/vendor/products/new"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+            className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 flex items-center gap-2 transition-colors shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Add Product
@@ -101,17 +101,17 @@ export default function VendorProducts() {
 
         {/* Products Grid */}
         {products.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-12 text-center border border-transparent dark:border-gray-800">
+            <Package className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               No Products Yet
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Start by adding your first product to the marketplace
             </p>
             <Link
               href="/vendor/products/new"
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
             >
               <Plus className="w-5 h-5" />
               Add Your First Product
@@ -122,9 +122,9 @@ export default function VendorProducts() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 overflow-hidden hover:shadow-lg transition-shadow border border-transparent dark:border-gray-800"
               >
-                  <div className="relative h-48 bg-gray-200">
+                  <div className="relative h-48 bg-gray-200 dark:bg-gray-800">
                   <Image
                     src={product.imageUrls[0] || "/placeholder.jpg"}
                     alt={product.name}
@@ -142,27 +142,27 @@ export default function VendorProducts() {
                   </div>
                 </div>                <div className="p-4">
                   <div className="mb-2">
-                    <span className="text-xs font-semibold text-blue-600 uppercase">
+                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
                       {product.category}
                     </span>
                   </div>
                   
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-1">
                     {product.name}
                   </h3>
                   
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                     {product.description}
                   </p>
                   
-                  <p className="text-2xl font-bold text-gray-900 mb-4">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                     Rs. {parseFloat(product.price).toLocaleString("en-NP")}
                   </p>
                   
                   <div className="flex gap-2">
                     <Link
                       href={`/products/${product.id}`}
-                      className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-center flex items-center justify-center gap-2"
+                      className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-center flex items-center justify-center gap-2"
                       target="_blank"
                     >
                       <Eye className="w-4 h-4" />
@@ -171,7 +171,7 @@ export default function VendorProducts() {
                     
                     <Link
                       href={`/vendor/products/${product.id}/edit`}
-                      className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center flex items-center justify-center gap-2"
+                      className="flex-1 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-center flex items-center justify-center gap-2 shadow-md"
                     >
                       <Edit className="w-4 h-4" />
                       Edit
@@ -180,7 +180,7 @@ export default function VendorProducts() {
                     <button
                       onClick={() => handleDelete(product.id)}
                       disabled={deleteId === product.id}
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                      className="bg-red-600 dark:bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 shadow-md"
                     >
                       {deleteId === product.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

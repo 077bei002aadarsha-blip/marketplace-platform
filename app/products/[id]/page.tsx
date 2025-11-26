@@ -80,18 +80,18 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     );
   }
 
   if (error && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <Link href="/products" className="text-blue-600 hover:underline">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+          <Link href="/products" className="text-blue-600 dark:text-blue-400 hover:underline">
             Back to Products
           </Link>
         </div>
@@ -102,13 +102,13 @@ export default function ProductDetailPage() {
   if (!product) return null;
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-gray-50 dark:bg-black min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Product Details */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 overflow-hidden mb-8 border border-transparent dark:border-gray-800">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Image */}
-            <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden relative">
+            <div className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden relative">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
@@ -121,16 +121,16 @@ export default function ProductDetailPage() {
 
             {/* Details */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 {product.name}
               </h1>
-              <p className="text-3xl font-bold text-blue-600 mb-6">
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-6">
                 Rs. {parseFloat(product.price).toLocaleString("en-NP")}
               </p>
-              <p className="text-gray-700 mb-6">{product.description}</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">{product.description}</p>
 
               <div className="mb-6">
-                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                <span className="inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
                   {product.category}
                 </span>
               </div>
@@ -138,11 +138,11 @@ export default function ProductDetailPage() {
               {product.stockQuantity > 0 ? (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4">
-                    <label className="font-medium">Quantity:</label>
+                    <label className="font-medium text-gray-900 dark:text-gray-100">Quantity:</label>
                     <select
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value))}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     >
                       {[...Array(Math.min(product.stockQuantity, 10))].map((_, i) => (
                         <option key={i + 1} value={i + 1}>
@@ -150,19 +150,19 @@ export default function ProductDetailPage() {
                         </option>
                       ))}
                     </select>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       ({product.stockQuantity} available)
                     </span>
                   </div>
 
                   {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                       {error}
                     </div>
                   )}
 
                   {success && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded">
                       {success}
                     </div>
                   )}
@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={handleAddToCart}
                     disabled={adding}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-blue-600 dark:bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                   >
                     {adding ? (
                       <>
@@ -186,7 +186,7 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
               ) : (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                   Out of Stock
                 </div>
               )}
@@ -197,15 +197,15 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+            <h2 className="font-display text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Related Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <Link
                   key={relatedProduct.id}
                   href={`/products/${relatedProduct.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
+                  className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 overflow-hidden hover:shadow-xl dark:hover:shadow-gray-800/50 transition-shadow border border-transparent dark:border-gray-800"
                 >
-                  <div className="aspect-square bg-gray-200 relative overflow-hidden">
+                  <div className="aspect-square bg-gray-200 dark:bg-gray-800 relative overflow-hidden">
                     <Image
                       src={relatedProduct.imageUrl}
                       alt={relatedProduct.name}
@@ -215,10 +215,10 @@ export default function ProductDetailPage() {
                     />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2">
                       {relatedProduct.name}
                     </h3>
-                    <p className="text-xl font-bold text-blue-600">
+                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                       Rs. {parseFloat(relatedProduct.price).toLocaleString("en-NP")}
                     </p>
                   </div>

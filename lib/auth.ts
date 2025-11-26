@@ -71,3 +71,46 @@ export async function getCurrentUser(): Promise<JWTPayload | null> {
   if (!token) return null;
   return verifyToken(token);
 }
+
+// Auth verification for API routes
+export async function verifyAuth(request: Request): Promise<{
+  authenticated: boolean;
+  user: (JWTPayload & { role: string }) | null;
+}> {
+  try {
+    const token = request.headers.get("cookie")?.split("auth-token=")[1]?.split(";")[0];
+    
+    if (!token) {
+      return { authenticated: false, user: null };
+    }
+
+    const payload = await verifyToken(token);
+    
+    if (!payload) {
+      return { authenticated: false, user: null };
+    }
+
+    // Fetch user role from database
+    const { db } = await import("@/lib/db");
+    const { users } = await import("@/lib/db/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    const [user] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, payload.userId))
+      .limit(1);
+
+    if (!user) {
+      return { authenticated: false, user: null };
+    }
+
+    return {
+      authenticated: true,
+      user: { ...payload, role: user.role },
+    };
+  } catch (error) {
+    console.error("Auth verification error:", error);
+    return { authenticated: false, user: null };
+  }
+}

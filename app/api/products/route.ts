@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     
     // Parse query parameters
-    const category = searchParams.get("category");
+    const categories = searchParams.getAll("category");
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const search = searchParams.get("search");
@@ -20,8 +20,9 @@ export async function GET(request: NextRequest) {
     // Build filters
     const filters = [eq(products.isActive, true)];
 
-    if (category) {
-      filters.push(eq(products.category, category));
+    if (categories.length > 0) {
+      const categoryFilters = categories.map(cat => eq(products.category, cat));
+      filters.push(or(...categoryFilters)!);
     }
 
     if (minPrice) {
@@ -49,6 +50,9 @@ export async function GET(request: NextRequest) {
         break;
       case "price_desc":
         orderBy = desc(products.price);
+        break;
+      case "name":
+        orderBy = asc(products.name);
         break;
       case "newest":
       default:

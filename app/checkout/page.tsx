@@ -73,8 +73,8 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     );
   }
@@ -85,19 +85,19 @@ export default function CheckoutPage() {
   const total = parseFloat(cart.subtotal) + estimatedTax;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-black py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="font-display text-3xl md:text-4xl font-bold mb-8 text-gray-900 dark:text-gray-100">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Shipping Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold mb-4">Shipping Information</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+              <h2 className="font-display text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Shipping Information</h2>
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Shipping Address *
                   </label>
                   <textarea
@@ -107,15 +107,15 @@ export default function CheckoutPage() {
                     minLength={10}
                     rows={4}
                     placeholder="Enter your complete shipping address..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Please provide your complete address including street, city, state, and PIN code
                   </p>
                 </div>
 
                 {error && (
-                  <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                     {error}
                   </div>
                 )}
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-full bg-blue-600 dark:bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-xl"
                 >
                   {submitting ? (
                     <>
@@ -140,16 +140,16 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 sticky top-24 border border-transparent dark:border-gray-800">
+              <h2 className="font-display text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Order Summary</h2>
 
               <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                 {cart.items.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {item.product.name} × {item.quantity}
                     </span>
-                    <span className="font-medium">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
                       Rs. {(parseFloat(item.product.price) * item.quantity).toLocaleString(
                         "en-NP"
                       )}
@@ -158,28 +158,28 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-2">
+              <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">
+                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
                     Rs. {parseFloat(cart.subtotal).toLocaleString("en-NP")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Estimated Tax (18%)</span>
-                  <span className="font-medium">
+                  <span className="text-gray-600 dark:text-gray-400">Estimated Tax (18%)</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
                     Rs. {estimatedTax.toLocaleString("en-NP")}
                   </span>
                 </div>
-                <div className="border-t pt-2 mt-2">
-                  <div className="flex justify-between text-lg font-bold">
+                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
+                  <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100">
                     <span>Total</span>
                     <span>Rs. {total.toLocaleString("en-NP")}</span>
                   </div>
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 mt-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                 Note: Payment integration will be added in Phase 2. This order will be placed without payment.
               </p>
             </div>
