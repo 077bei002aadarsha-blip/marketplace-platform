@@ -14,16 +14,21 @@ interface Order {
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await fetch("/api/orders");
-        if (!response.ok) throw new Error("Failed to fetch orders");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch orders");
+        }
         const data = await response.json();
         setOrders(data.orders || []);
       } catch (error) {
         console.error("Error fetching orders:", error);
+        setError(error instanceof Error ? error.message : "Failed to load orders");
       } finally {
         setLoading(false);
       }
@@ -36,6 +41,30 @@ export default function OrdersPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 border border-transparent dark:border-gray-800">
+            <Package className="w-16 h-16 text-red-400 dark:text-red-600 mx-auto mb-4" />
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {error}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {error.includes("Not authenticated") ? "Please log in to view your orders" : "Please try again later"}
+            </p>
+            <Link
+              href={error.includes("Not authenticated") ? "/auth/login" : "/"}
+              className="inline-block bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg hover:shadow-xl"
+            >
+              {error.includes("Not authenticated") ? "Go to Login" : "Go to Home"}
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

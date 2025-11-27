@@ -76,7 +76,9 @@ export const orders = pgTable("orders", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, processing, shipped, delivered, cancelled
   paymentStatus: varchar("payment_status", { length: 50 }).notNull().default("unpaid"), // unpaid, paid, refunded
-  paymentIntentId: varchar("payment_intent_id", { length: 255 }), // Stripe payment ID
+  paymentGateway: varchar("payment_gateway", { length: 50 }), // esewa, khalti, cod
+  paymentIntentId: varchar("payment_intent_id", { length: 255 }), // Payment gateway transaction ID
+  transactionId: varchar("transaction_id", { length: 255 }), // Gateway specific transaction reference
   shippingAddress: text("shipping_address").notNull(),
   shippingCity: varchar("shipping_city", { length: 100 }),
   shippingState: varchar("shipping_state", { length: 100 }),

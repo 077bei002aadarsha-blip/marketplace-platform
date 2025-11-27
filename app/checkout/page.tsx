@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard, Package } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
+  const [selectedGateway, setSelectedGateway] = useState<"esewa" | "cod">("esewa");
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -52,21 +53,73 @@ export default function CheckoutPage() {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/orders", {
+      // Create order first
+      const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shippingAddress }),
       });
 
-      const data = await response.json();
+      const orderData = await orderResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create order");
+      if (!orderResponse.ok) {
+        throw new Error(orderData.error || "Failed to create order");
       }
 
-      router.push(`/orders/${data.order.id}`);
+      const orderId = orderData.order.id;
+
+      // Handle payment based on selected gateway
+      if (selectedGateway === "cod") {
+        // Cash on delivery - redirect to order page
+        router.push(`/orders/${orderId}`);
+        return;
+      }
+
+      // Initialize payment
+      const paymentResponse = await fetch("/api/payment/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, gateway: selectedGateway }),
+      });
+
+      const paymentData = await paymentResponse.json();
+
+      if (!paymentResponse.ok) {
+        console.error("Payment initiation failed:", paymentData);
+        throw new Error(paymentData.error || "Failed to initiate payment");
+      }
+
+      console.log("Payment data received:", paymentData);
+
+      if (selectedGateway === "esewa") {
+        // Redirect to eSewa
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = paymentData.data.paymentUrl;
+
+        Object.entries(paymentData.data.params).forEach(([key, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value as string;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } else if (selectedGateway === "khalti") {
+        // Redirect to Khalti payment page
+        console.log("Khalti payment URL:", paymentData.payment_url);
+        if (paymentData.payment_url) {
+          window.location.href = paymentData.payment_url;
+        } else {
+          console.error("Khalti response:", paymentData);
+          throw new Error("Khalti payment URL not received");
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create order");
+      console.error("Payment error:", err);
+      setError(err instanceof Error ? err.message : "Failed to process order");
       setSubmitting(false);
     }
   };
@@ -93,9 +146,52 @@ export default function CheckoutPage() {
           {/* Shipping Form */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
-              <h2 className="font-display text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Shipping Information</h2>
+              <h2 className="font-display text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">Shipping & Payment</h2>
               
               <form onSubmit={handleSubmit}>
+                {/* Payment Method Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Payment Method *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* eSewa */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGateway("esewa")}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        selectedGateway === "esewa"
+                          ? "border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/20"
+                          : "border-gray-300 dark:border-gray-700 hover:border-green-400 dark:hover:border-green-600"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <CreditCard className="w-8 h-8 text-green-600 dark:text-green-500 mb-2" />
+                        <span className="font-semibold text-gray-900 dark:text-white">eSewa</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Digital Wallet</span>
+                      </div>
+                    </button>
+
+                    {/* Cash on Delivery */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGateway("cod")}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        selectedGateway === "cod"
+                          ? "border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <Package className="w-8 h-8 text-blue-600 dark:text-blue-500 mb-2" />
+                        <span className="font-semibold text-gray-900 dark:text-white">COD</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cash on Delivery</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Shipping Address */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Shipping Address *
@@ -130,10 +226,19 @@ export default function CheckoutPage() {
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                       Processing...
                     </>
+                  ) : selectedGateway === "cod" ? (
+                    "Place Order (COD)"
                   ) : (
-                    "Place Order"
+                    "Proceed to eSewa Payment"
                   )}
                 </button>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+                  {selectedGateway === "cod" 
+                    ? "You will pay when you receive the order"
+                    : "You will be redirected to secure payment gateway"
+                  }
+                </p>
               </form>
             </div>
           </div>
@@ -179,9 +284,11 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                Note: Payment integration will be added in Phase 2. This order will be placed without payment.
-              </p>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  <span className="font-semibold">Secure Payment:</span> All transactions are encrypted and secure. Your payment information is protected.
+                </p>
+              </div>
             </div>
           </div>
         </div>

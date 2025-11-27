@@ -17,8 +17,10 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@types/ws": "^8.18.1",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.8.0",
+    "crypto-js": "^4.2.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
@@ -36,6 +38,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/crypto-js": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
