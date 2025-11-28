@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders } from "@/lib/db/schema";
+import { orders, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { esewaPayment } from "@/lib/payment/esewa";
 import { khaltiPayment } from "@/lib/payment/khalti";
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,6 +83,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (!verified) {
+      // Send payment failed email
+      try {
+        const [user] = await db
+          .select({ email: users.email })
+          .from(users)
+          .where(eq(users.id, order.userId))
+          .limit(1);
+
+        if (user?.email) {
+          await sendPaymentFailedEmail({
+            to: user.email,
+            orderId: order.id,
+            totalAmount: order.totalAmount,
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send payment failed email:", emailError);
+      }
+
       return NextResponse.json(
         { error: "Payment verification failed" },
         { status: 400 }
@@ -99,6 +119,27 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       })
       .where(eq(orders.id, orderId));
+
+    // Send payment success email
+    try {
+      const [user] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, order.userId))
+        .limit(1);
+
+      if (user?.email) {
+        await sendPaymentSuccessEmail({
+          to: user.email,
+          orderId: order.id,
+          totalAmount: order.totalAmount,
+          transactionId,
+          paymentGateway: gateway,
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send payment success email:", emailError);
+    }
 
     return NextResponse.json({
       success: true,

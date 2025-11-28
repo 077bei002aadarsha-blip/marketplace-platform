@@ -4,6 +4,7 @@ import { orders, orderItems, carts, cartItems, products } from "@/lib/db/schema"
 import { getCurrentUser } from "@/lib/auth";
 import { createOrderSchema } from "@/lib/validations";
 import { eq, desc } from "drizzle-orm";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 // POST - Create new order
 export async function POST(request: NextRequest) {
@@ -103,6 +104,24 @@ export async function POST(request: NextRequest) {
 
     // Clear cart
     await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmationEmail({
+        to: currentUser.email || "",
+        orderId: order.id,
+        totalAmount: order.totalAmount,
+        shippingAddress: order.shippingAddress,
+        items: items.map((item) => ({
+          name: `Product ${item.productId}`, // You might want to fetch product names
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      });
+    } catch (emailError) {
+      console.error("Failed to send order confirmation email:", emailError);
+      // Don't fail the order creation if email fails
+    }
 
     return NextResponse.json(
       {

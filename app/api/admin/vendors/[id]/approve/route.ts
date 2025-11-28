@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { vendors, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyAuth } from "@/lib/auth";
+import { sendVendorApprovalEmail } from "@/lib/email";
 
 export async function PUT(
   request: Request,
@@ -60,6 +61,24 @@ export async function PUT(
         updatedAt: new Date(),
       })
       .where(eq(users.id, vendor[0].userId));
+
+    // Send approval email
+    try {
+      const [user] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, vendor[0].userId))
+        .limit(1);
+
+      if (user?.email) {
+        await sendVendorApprovalEmail({
+          to: user.email,
+          vendorName: updatedVendor.businessName || "Vendor",
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send vendor approval email:", emailError);
+    }
 
     return NextResponse.json({
       message: "Vendor approved successfully",
