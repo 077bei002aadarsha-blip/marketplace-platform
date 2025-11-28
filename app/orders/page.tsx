@@ -2,7 +2,35 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Loader2, Package } from "lucide-react";
+import { Loader2, Package, Clock, Truck, CheckCircle, XCircle } from "lucide-react";
+
+const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+  pending: {
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+    icon: Clock,
+  },
+  processing: {
+    label: "Processing",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    icon: Package,
+  },
+  shipped: {
+    label: "Shipped",
+    color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    icon: Truck,
+  },
+  delivered: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    icon: CheckCircle,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    icon: XCircle,
+  },
+};
 
 interface Order {
   id: string;
@@ -104,9 +132,18 @@ export default function OrdersPage() {
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       Rs. {parseFloat(order.totalAmount).toLocaleString("en-NP")}
                     </p>
-                    <span className="inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
-                      {order.status}
-                    </span>
+                    <div className="flex items-center justify-end mt-2">
+                      {(() => {
+                        const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+                        const StatusIcon = config.icon;
+                        return (
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${config.color}`}>
+                            <StatusIcon className="w-4 h-4" />
+                            {config.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </div>
               </Link>

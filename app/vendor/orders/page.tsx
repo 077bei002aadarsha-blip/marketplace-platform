@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingCart, Package, Clock, Truck, CheckCircle } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 interface OrderItem {
   id: number;
@@ -20,26 +20,26 @@ interface Order {
   items: OrderItem[];
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+const statusConfig: Record<string, { label: string; color: string }> = {
   pending: {
     label: "Pending",
     color: "bg-yellow-100 text-yellow-800",
-    icon: Clock,
   },
   processing: {
     label: "Processing",
     color: "bg-blue-100 text-blue-800",
-    icon: Package,
   },
   shipped: {
     label: "Shipped",
     color: "bg-purple-100 text-purple-800",
-    icon: Truck,
   },
   delivered: {
     label: "Delivered",
     color: "bg-green-100 text-green-800",
-    icon: CheckCircle,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-800",
   },
 };
 
@@ -47,6 +47,7 @@ export default function VendorOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -66,6 +67,37 @@ export default function VendorOrders() {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: number, newStatus: string) => {
+    setUpdatingOrderId(orderId);
+    try {
+      const response = await fetch(`/api/vendor/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update order status");
+      }
+
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, status: newStatus }
+          : order
+      ));
+
+      alert("Order status updated successfully!");
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Failed to update order status. Please try again.");
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -170,7 +202,6 @@ export default function VendorOrders() {
           <div className="space-y-4">
             {filteredOrders.map((order) => {
               const config = statusConfig[order.status as keyof typeof statusConfig];
-              const StatusIcon = config.icon;
               
               return (
                 <div
@@ -193,10 +224,25 @@ export default function VendorOrders() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${config.color}`}>
-                        <StatusIcon className="w-4 h-4" />
-                        {config.label}
-                      </span>
+                      {updatingOrderId === order.id ? (
+                        <div className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 flex items-center gap-1">
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                          Updating...
+                        </div>
+                      ) : (
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border-0 ${config.color} cursor-pointer hover:opacity-80 transition-opacity`}
+                          disabled={updatingOrderId !== null}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      )}
                     </div>
                   </div>
 
