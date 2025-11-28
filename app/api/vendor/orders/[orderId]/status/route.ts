@@ -87,7 +87,6 @@ export async function PUT(
     try {
       await sendOrderStatusEmail({
         to: customerEmail,
-        customerName: customerName,
         orderId: orderId,
         status: status,
       });

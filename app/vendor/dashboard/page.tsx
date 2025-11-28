@@ -10,8 +10,25 @@ import {
   DollarSign, 
   Plus,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  BarChart3,
+  PieChart,
+  LineChart
 } from "lucide-react";
+import {
+  LineChart as RechartsLineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Cell,
+  Pie,
+  BarChart as RechartsBarChart,
+  Bar,
+} from 'recharts';
 
 interface VendorStats {
   totalRevenue: number;
@@ -21,9 +38,28 @@ interface VendorStats {
   isApproved: boolean;
 }
 
+interface AnalyticsData {
+  salesData: Array<{
+    date: string;
+    revenue: number;
+    orders: number;
+  }>;
+  statusData: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  topProducts: Array<{
+    name: string;
+    sold: number;
+    revenue: number;
+  }>;
+}
+
 export default function VendorDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<VendorStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,19 +69,27 @@ export default function VendorDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch("/api/vendor/dashboard");
+      const [statsResponse, analyticsResponse] = await Promise.all([
+        fetch("/api/vendor/dashboard"),
+        fetch("/api/vendor/analytics")
+      ]);
       
-      if (response.status === 403) {
+      if (statsResponse.status === 403) {
         router.push("/vendor/register");
         return;
       }
 
-      if (!response.ok) {
+      if (!statsResponse.ok) {
         throw new Error("Failed to fetch dashboard data");
       }
 
-      const data = await response.json();
-      setStats(data.stats);
+      const statsData = await statsResponse.json();
+      setStats(statsData.stats);
+
+      if (analyticsResponse.ok) {
+        const analyticsData = await analyticsResponse.json();
+        setAnalytics(analyticsData);
+      }
     } catch (error) {
       console.error("Error fetching dashboard:", error);
     } finally {
@@ -170,6 +214,145 @@ export default function VendorDashboard() {
             </p>
           </div>
         </div>
+
+        {/* Analytics Charts */}
+        {analytics && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Sales Trend Chart */}
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+              <div className="flex items-center mb-4">
+                <LineChart className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Sales Trend (Last 30 Days)
+                </h3>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsLineChart data={analytics.salesData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis
+                      dataKey="date"
+                      fontSize={12}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis
+                      fontSize={12}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgb(255 255 255)',
+                        border: '1px solid rgb(229 231 235)',
+                        borderRadius: '6px',
+                        color: 'rgb(17 24 39)'
+                      }}
+                      formatter={(value: number, name: string) => [
+                        name === 'revenue' ? `Rs. ${value.toLocaleString()}` : value,
+                        name === 'revenue' ? 'Revenue' : 'Orders'
+                      ]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    />
+                  </RechartsLineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Order Status Distribution */}
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+              <div className="flex items-center mb-4">
+                <PieChart className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Order Status Distribution
+                </h3>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={analytics.statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {analytics.statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => [value, 'Orders']}
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {analytics.statusData.map((item, index) => (
+                  <div key={index} className="flex items-center text-sm">
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {item.name}: {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Top Products Chart */}
+        {analytics && analytics.topProducts.length > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 mb-8 border border-transparent dark:border-gray-800">
+            <div className="flex items-center mb-4">
+              <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Top Performing Products
+              </h3>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsBarChart data={analytics.topProducts} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={12}
+                    className="text-gray-600 dark:text-gray-400"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    className="text-gray-600 dark:text-gray-400"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgb(255 255 255)',
+                      border: '1px solid rgb(229 231 235)',
+                      borderRadius: '6px',
+                      color: 'rgb(17 24 39)'
+                    }}
+                    formatter={(value: number, name: string) => [
+                      name === 'revenue' ? `Rs. ${value.toLocaleString()}` : value,
+                      name === 'revenue' ? 'Revenue' : 'Units Sold'
+                    ]}
+                  />
+                  <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </RechartsBarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
