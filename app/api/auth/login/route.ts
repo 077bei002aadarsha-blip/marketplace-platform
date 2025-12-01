@@ -4,6 +4,8 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyPassword, createToken, setAuthCookie } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
+import { ApiErrors } from "@/lib/api-errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,18 +60,20 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.error("Login failed", error);
     
     if (error instanceof Error && error.name === "ZodError") {
+      const validationError = ApiErrors.ValidationError("Invalid email or password format");
       return NextResponse.json(
-        { error: "Invalid input" },
-        { status: 400 }
+        { error: validationError.message },
+        { status: validationError.statusCode }
       );
     }
 
+    const internalError = ApiErrors.InternalError();
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { error: internalError.message },
+      { status: internalError.statusCode }
     );
   }
 }

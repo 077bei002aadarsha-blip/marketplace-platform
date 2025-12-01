@@ -4,6 +4,7 @@ import { carts, cartItems, products } from "@/lib/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { addToCartSchema } from "@/lib/validations";
 import { eq, and } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // GET - Get user's cart
 export async function GET() {
@@ -76,7 +77,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Get cart error:", error);
+    logger.error("Failed to fetch cart", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Add to cart error:", error);
+    logger.error("Failed to add item to cart", error);
     
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(
@@ -236,7 +237,7 @@ export async function DELETE() {
       message: "Cart cleared successfully",
     });
   } catch (error) {
-    console.error("Clear cart error:", error);
+    logger.error("Failed to clear cart", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

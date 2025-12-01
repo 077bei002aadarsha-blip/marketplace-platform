@@ -110,7 +110,7 @@ export async function verifyAuth(request: Request): Promise<{
       user: { ...payload, role: user.role },
     };
   } catch (error) {
-    console.error("Auth verification error:", error);
+    logger.error("Auth verification failed", error);
     return { authenticated: false, user: null };
   }
 }

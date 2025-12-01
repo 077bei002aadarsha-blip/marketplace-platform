@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { esewaPayment } from "@/lib/payment/esewa";
-import { khaltiPayment } from "@/lib/payment/khalti";
+import { verifyEsewaPayment } from "@/lib/payment/esewa";
+import { verifyKhaltiPayment } from "@/lib/payment/khalti";
 import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (emailError) {
-        console.error("Failed to send payment failed email:", emailError);
+        logger.warn("Payment failed email not sent", emailError);
       }
 
       return NextResponse.json(
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
         });
       }
     } catch (emailError) {
-      console.error("Failed to send payment success email:", emailError);
+      logger.warn("Payment success email not sent", emailError);
     }
 
     return NextResponse.json({
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest) {
       transactionId,
     });
   } catch (error) {
-    console.error("Payment verification error:", error);
+    logger.error("Payment verification failed", error);
     return NextResponse.json(
       { error: "Failed to verify payment" },
       { status: 500 }

@@ -48,6 +48,24 @@ drizzle/*.sql
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Test files
+test-*.ts
+test-*.js
+*.test.local.ts
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
 !.vscode/extensions.json
 .idea/
 *.swp

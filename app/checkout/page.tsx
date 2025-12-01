@@ -85,11 +85,11 @@ export default function CheckoutPage() {
       const paymentData = await paymentResponse.json();
 
       if (!paymentResponse.ok) {
-        console.error("Payment initiation failed:", paymentData);
+
         throw new Error(paymentData.error || "Failed to initiate payment");
       }
 
-      console.log("Payment data received:", paymentData);
+
 
       if (selectedGateway === "esewa") {
         // Redirect to eSewa
@@ -109,11 +109,11 @@ export default function CheckoutPage() {
         form.submit();
       } else if (selectedGateway === "khalti") {
         // Redirect to Khalti payment page
-        console.log("Khalti payment URL:", paymentData.payment_url);
+
         if (paymentData.payment_url) {
           window.location.href = paymentData.payment_url;
         } else {
-          console.error("Khalti response:", paymentData);
+
           throw new Error("Khalti payment URL not received");
         }
       }

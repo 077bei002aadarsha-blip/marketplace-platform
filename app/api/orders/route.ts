@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { createOrderSchema } from "@/lib/validations";
 import { eq, desc } from "drizzle-orm";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 // POST - Create new order
 export async function POST(request: NextRequest) {
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
         })),
       });
     } catch (emailError) {
-      console.error("Failed to send order confirmation email:", emailError);
+      logger.warn("Order confirmation email failed", emailError);
       // Don't fail the order creation if email fails
     }
 
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Create order error:", error);
+    logger.error("Failed to create order", error);
     
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(
@@ -174,7 +175,7 @@ export async function GET() {
       orders: userOrders,
     });
   } catch (error) {
-    console.error("Get orders error:", error);
+    logger.error("Failed to fetch orders", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

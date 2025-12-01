@@ -3,6 +3,12 @@ import { db } from "@/lib/db";
 import { orders, orderItems, products, vendors } from "@/lib/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
+import { logger } from "@/lib/logger";
+import { STATUS_COLORS } from "@/lib/constants";
+
+function getStatusColor(status: string): string {
+  return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || '#6b7280';
+}
 
 export async function GET() {
   try {
@@ -113,21 +119,10 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("Get vendor analytics error:", error);
+    logger.error("Failed to fetch vendor analytics", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics data" },
       { status: 500 }
     );
   }
-}
-
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    pending: '#f59e0b',
-    processing: '#3b82f6',
-    shipped: '#8b5cf6',
-    delivered: '#10b981',
-    cancelled: '#ef4444',
-  };
-  return colors[status] || '#6b7280';
 }

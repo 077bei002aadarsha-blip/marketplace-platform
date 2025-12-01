@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { eq, and, gte, lte, ilike, or, desc, asc, sql } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Get products error:", error);
+    logger.error("Failed to fetch products", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

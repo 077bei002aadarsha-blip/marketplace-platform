@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users, carts } from "@/lib/db/schema";
+import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, createToken, setAuthCookie } from "@/lib/auth";
 import { registerSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
+import { ApiErrors } from "@/lib/api-errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("Registration failed", error);
     
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

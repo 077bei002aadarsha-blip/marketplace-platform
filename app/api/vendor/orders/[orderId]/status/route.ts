@@ -4,6 +4,7 @@ import { orders, orderItems, products, vendors, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
 
@@ -91,7 +92,7 @@ export async function PUT(
         status: status,
       });
     } catch (emailError) {
-      console.error("Failed to send order status email:", emailError);
+      logger.warn("Order status email failed", emailError);
       // Don't fail the request if email fails
     }
 
@@ -102,7 +103,7 @@ export async function PUT(
     });
 
   } catch (error) {
-    console.error("Update order status error:", error);
+    logger.error("Failed to update order status", error);
     return NextResponse.json(
       { error: "Failed to update order status" },
       { status: 500 }
