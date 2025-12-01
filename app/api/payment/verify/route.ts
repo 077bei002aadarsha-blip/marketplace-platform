@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { verifyEsewaPayment } from "@/lib/payment/esewa";
-import { verifyKhaltiPayment } from "@/lib/payment/khalti";
+import { EsewaPayment } from "@/lib/payment/esewa";
 import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+
+const esewaPayment = new EsewaPayment();
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,22 +61,6 @@ export async function POST(request: NextRequest) {
       });
 
       transactionId = refId;
-    } else if (gateway === "khalti") {
-      const { pidx } = paymentData;
-      
-      if (!pidx) {
-        return NextResponse.json(
-          { error: "Khalti pidx is required" },
-          { status: 400 }
-        );
-      }
-
-      const result = await khaltiPayment.verifyPayment(pidx);
-      verified = result.success && result.data?.status === "Completed";
-      
-      if (result.data?.transaction_id) {
-        transactionId = result.data.transaction_id;
-      }
     } else {
       return NextResponse.json(
         { error: "Invalid payment gateway" },

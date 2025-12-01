@@ -107,18 +107,8 @@ export default function CheckoutPage() {
 
         document.body.appendChild(form);
         form.submit();
-      } else if (selectedGateway === "khalti") {
-        // Redirect to Khalti payment page
-
-        if (paymentData.payment_url) {
-          window.location.href = paymentData.payment_url;
-        } else {
-
-          throw new Error("Khalti payment URL not received");
-        }
       }
     } catch (err) {
-      console.error("Payment error:", err);
       setError(err instanceof Error ? err.message : "Failed to process order");
       setSubmitting(false);
     }

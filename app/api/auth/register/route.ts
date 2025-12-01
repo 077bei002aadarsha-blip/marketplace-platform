@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, carts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, createToken, setAuthCookie } from "@/lib/auth";
 import { registerSchema } from "@/lib/validations";
 import { logger } from "@/lib/logger";
-import { ApiErrors } from "@/lib/api-errors";
 
 export async function POST(request: NextRequest) {
   try {

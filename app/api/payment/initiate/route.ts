@@ -3,8 +3,10 @@ import { verifyAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { orders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { esewaPayment } from "@/lib/payment/esewa";
-import { khaltiPayment } from "@/lib/payment/khalti";
+import { EsewaPayment } from "@/lib/payment/esewa";
+import { logger } from "@/lib/logger";
+
+const esewaPayment = new EsewaPayment();
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,9 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate gateway
-    if (!["esewa", "khalti"].includes(gateway)) {
+    if (gateway !== "esewa") {
       return NextResponse.json(
-        { error: "Invalid payment gateway" },
+        { error: "Only eSewa payment gateway is supported" },
         { status: 400 }
       );
     }
@@ -75,48 +77,14 @@ export async function POST(request: NextRequest) {
         gateway: "esewa",
         data: paymentData,
       });
-    } else if (gateway === "khalti") {
-      console.log("Initiating Khalti payment for order:", order.id, "Amount:", amount);
-      
-      const paymentResult = await khaltiPayment.initiatePayment({
-        amount,
-        orderId: order.id,
-        productName: `Order #${order.id.slice(0, 8)}`,
-        customerName: "Customer",
-        customerEmail: authResult.user.email || "test@example.com",
-        customerPhone: "9800000000",
-      });
-
-      console.log("Khalti payment result:", paymentResult);
-
-      if (!paymentResult.success) {
-        console.error("Khalti payment failed:", paymentResult.error);
-        return NextResponse.json(
-          { error: paymentResult.error || "Khalti payment initiation failed" },
-          { status: 500 }
-        );
-      }
-
-      // Update order with payment gateway
-      await db
-        .update(orders)
-        .set({ paymentGateway: "khalti" })
-        .where(eq(orders.id, orderId));
-
-      return NextResponse.json({
-        success: true,
-        gateway: "khalti",
-        payment_url: paymentResult.payment_url,
-        pidx: paymentResult.pidx,
-      });
     }
 
     return NextResponse.json(
-      { error: "Gateway not supported" },
+      { error: "Payment gateway not supported" },
       { status: 400 }
     );
   } catch (error) {
-    console.error("Payment initiation error:", error);
+    logger.error("Payment initiation failed", error);
     return NextResponse.json(
       { error: "Failed to initiate payment" },
       { status: 500 }
