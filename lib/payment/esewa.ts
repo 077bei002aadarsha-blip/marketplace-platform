@@ -36,7 +36,7 @@ export class EsewaPayment {
   }
 
   // Initialize payment with eSewa
-  initiatePayment({ amount, orderId, productName }: EsewaPaymentParams) {
+  initiatePayment({ amount, orderId }: EsewaPaymentParams) {
     const totalAmount = amount.toFixed(2);
     const taxAmount = "0";
     const productServiceCharge = "0";

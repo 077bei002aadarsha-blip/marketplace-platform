@@ -73,7 +73,7 @@ export async function PUT(
       );
     }
 
-    const { customerEmail, customerName } = orderItemsCheck[0];
+    const { customerEmail } = orderItemsCheck[0];
 
     // Update order status
     await db

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, X, Filter } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 
 interface Product {
   id: string;

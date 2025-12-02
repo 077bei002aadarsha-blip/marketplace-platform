@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,7 +12,7 @@ import {
   XCircle,
   Clock,
   Loader2,
-  Filter,
+  // ...existing code...
   Search,
 } from "lucide-react";
 
@@ -40,11 +40,7 @@ export default function AdminVendorsPage() {
   const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchVendors();
-  }, [statusFilter]);
-
-  const fetchVendors = async () => {
+  const fetchVendors = useCallback(async () => {
     try {
       const url = `/api/admin/vendors?status=${statusFilter}`;
       const response = await fetch(url);
@@ -70,7 +66,11 @@ export default function AdminVendorsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, router]);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
 
   const handleApprove = async (vendorId: string) => {
     if (!confirm("Are you sure you want to approve this vendor?")) {

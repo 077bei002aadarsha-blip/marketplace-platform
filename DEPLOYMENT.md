@@ -73,29 +73,38 @@ git push -u origin main
 
    Click "Environment Variables" and add:
 
+   **Core Variables:**
    ```env
    DATABASE_URL=your-railway-connection-string
-   ```
-   
-   ```env
    JWT_SECRET=generate-with-command-below
-   ```
-   
-   ```env
    NEXTAUTH_SECRET=generate-with-command-below
-   ```
-   
-   ```env
    NEXTAUTH_URL=https://your-project.vercel.app
-   ```
-   
-   ```env
    NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
-   ```
-   
-   ```env
    NODE_ENV=production
    ```
+
+   **Email (Resend) - Required for order notifications:**
+   ```env
+   RESEND_API_KEY=re_xxxxx
+   RESEND_FROM_EMAIL=noreply@yourdomain.com
+   ```
+   Get API key from: https://resend.com/api-keys
+
+   **File Upload (Cloudinary) - Required for product images:**
+   ```env
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+   ```
+   Get credentials from: https://console.cloudinary.com
+
+   **Payment Gateway (eSewa) - Required for online payments:**
+   ```env
+   NEXT_PUBLIC_ESEWA_MERCHANT_ID=EPAYTEST
+   ESEWA_SECRET_KEY=8gBm/:&EnhH.1/q
+   NEXT_PUBLIC_ESEWA_ENVIRONMENT=production
+   ```
+   Note: Use test credentials above for testing. Get production credentials from eSewa merchant account.
 
    **Generate secrets:**
    ```bash
