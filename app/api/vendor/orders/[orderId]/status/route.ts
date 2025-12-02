@@ -10,9 +10,11 @@ const validStatuses = ["pending", "processing", "shipped", "delivered", "cancell
 
 export async function PUT(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
+    
     const user = await getCurrentUser();
 
     if (!user) {
@@ -46,8 +48,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    const orderId = params.orderId;
 
     // Verify the order contains products from this vendor
     const orderItemsCheck = await db

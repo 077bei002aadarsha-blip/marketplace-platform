@@ -7,9 +7,11 @@ import { sendVendorApprovalEmail } from "@/lib/email";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Verify admin authentication
     const authResult = await verifyAuth(request);
     if (!authResult.authenticated || !authResult.user) {
@@ -27,7 +29,7 @@ export async function PUT(
       );
     }
 
-    const vendorId = params.id;
+    const vendorId = id;
 
     // Check if vendor exists
     const vendor = await db
@@ -95,9 +97,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Verify admin authentication
     const authResult = await verifyAuth(request);
     if (!authResult.authenticated || !authResult.user) {
@@ -115,7 +119,7 @@ export async function DELETE(
       );
     }
 
-    const vendorId = params.id;
+    const vendorId = id;
 
     // Check if vendor exists
     const vendor = await db
