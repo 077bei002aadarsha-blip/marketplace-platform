@@ -1,9 +1,21 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
 import { Resend } from "resend";
+import { logger } from "./logger";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+// Lazy initialization of Resend client
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  
+  if (!apiKey) {
+    logger.warn("RESEND_API_KEY is not set - email functionality will be disabled");
+    return null;
+  }
+  
+  return new Resend(apiKey);
+}
+
+function getFromEmail() {
+  return process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+}
 
 interface EmailParams {
   to: string;
@@ -13,17 +25,24 @@ interface EmailParams {
 
 export async function sendEmail({ to, subject, html }: EmailParams) {
   try {
+    const resend = getResendClient();
+    
+    if (!resend) {
+      logger.warn("Email sending skipped - Resend client not initialized");
+      return { success: false, error: "Email service not configured" };
+    }
+    
     const data = await resend.emails.send({
-      from: fromEmail,
+      from: getFromEmail(),
       to,
       subject,
       html,
     });
 
-
+    logger.info(`Email sent successfully to ${to}`);
     return { success: true, data };
   } catch (error) {
-    // Email sending failed silently - non-critical
+    logger.error("Email sending failed", error);
     return { success: false, error };
   }
 }
