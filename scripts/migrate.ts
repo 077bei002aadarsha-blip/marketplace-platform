@@ -7,13 +7,13 @@ import { resolve } from "path";
 // Load environment variables
 dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
-}
-
 async function main() {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not set");
+  }
+  
   console.log("Starting migration...");
   
   const sql = postgres(connectionString, { max: 1 });
