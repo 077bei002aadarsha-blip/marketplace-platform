@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -31,7 +31,7 @@ interface Vendor {
   userPhone: string | null;
 }
 
-export default function AdminVendorsPage() {
+function VendorsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -338,5 +338,21 @@ export default function AdminVendorsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminVendorsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        </div>
+      </div>
+    }>
+      <VendorsContent />
+    </Suspense>
   );
 }
