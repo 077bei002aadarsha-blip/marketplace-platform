@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, users } from "@/lib/db/schema";
+import { orders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { EsewaPayment } from "@/lib/payment/esewa";
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail } from "@/lib/email";
-import { logger } from "@/lib/logger";
-
-const esewaPayment = new EsewaPayment();
+import { esewaPayment } from "@/lib/payment/esewa";
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,25 +65,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!verified) {
-      // Send payment failed email
-      try {
-        const [user] = await db
-          .select({ email: users.email })
-          .from(users)
-          .where(eq(users.id, order.userId))
-          .limit(1);
-
-        if (user?.email) {
-          await sendPaymentFailedEmail({
-            to: user.email,
-            orderId: order.id,
-            totalAmount: order.totalAmount,
-          });
-        }
-      } catch (emailError) {
-        logger.warn("Payment failed email not sent", emailError);
-      }
-
       return NextResponse.json(
         { error: "Payment verification failed" },
         { status: 400 }
@@ -106,27 +83,6 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(orders.id, orderId));
 
-    // Send payment success email
-    try {
-      const [user] = await db
-        .select({ email: users.email })
-        .from(users)
-        .where(eq(users.id, order.userId))
-        .limit(1);
-
-      if (user?.email) {
-        await sendPaymentSuccessEmail({
-          to: user.email,
-          orderId: order.id,
-          totalAmount: order.totalAmount,
-          transactionId,
-          paymentGateway: gateway,
-        });
-      }
-    } catch (emailError) {
-      logger.warn("Payment success email not sent", emailError);
-    }
-
     return NextResponse.json({
       success: true,
       message: "Payment verified successfully",
@@ -134,7 +90,7 @@ export async function POST(request: NextRequest) {
       transactionId,
     });
   } catch (error) {
-    logger.error("Payment verification failed", error);
+    console.error("Payment verification error:", error);
     return NextResponse.json(
       { error: "Failed to verify payment" },
       { status: 500 }

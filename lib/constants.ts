@@ -25,7 +25,7 @@ export const PAYMENT_STATUS = {
 
 export const PAYMENT_METHOD = {
   ESEWA: 'esewa',
-  KHALTI: 'khalti',
+
   COD: 'cod',
 } as const;
 

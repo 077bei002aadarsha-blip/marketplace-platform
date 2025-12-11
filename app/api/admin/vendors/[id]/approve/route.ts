@@ -3,15 +3,13 @@ import { db } from "@/lib/db";
 import { vendors, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyAuth } from "@/lib/auth";
-import { sendVendorApprovalEmail } from "@/lib/email";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id } = await params;
-    
     // Verify admin authentication
     const authResult = await verifyAuth(request);
     if (!authResult.authenticated || !authResult.user) {
@@ -64,24 +62,6 @@ export async function PUT(
       })
       .where(eq(users.id, vendor[0].userId));
 
-    // Send approval email
-    try {
-      const [user] = await db
-        .select({ email: users.email })
-        .from(users)
-        .where(eq(users.id, vendor[0].userId))
-        .limit(1);
-
-      if (user?.email) {
-        await sendVendorApprovalEmail({
-          to: user.email,
-          vendorName: updatedVendor.businessName || "Vendor",
-        });
-      }
-    } catch (emailError) {
-      console.error("Failed to send vendor approval email:", emailError);
-    }
-
     return NextResponse.json({
       message: "Vendor approved successfully",
       vendor: updatedVendor,
@@ -99,9 +79,8 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id } = await params;
-    
     // Verify admin authentication
     const authResult = await verifyAuth(request);
     if (!authResult.authenticated || !authResult.user) {
