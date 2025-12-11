@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { XCircle } from "lucide-react";
+import { XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function PaymentFailurePage() {
+function FailureContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("oid") || "";
   const message = searchParams.get("message") || "Payment was cancelled or failed";
@@ -53,5 +54,20 @@ export default function PaymentFailurePage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailurePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 text-center">
+          <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <FailureContent />
+    </Suspense>
   );
 }
