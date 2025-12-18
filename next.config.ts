@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: false, // Disable to reduce hydration warnings
+  turbopack: {
+    root: __dirname, // Pin root to avoid multiple lockfile warning
+  },
   images: {
     remotePatterns: [
       {
