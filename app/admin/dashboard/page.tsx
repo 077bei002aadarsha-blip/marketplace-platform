@@ -14,7 +14,24 @@ import {
   CheckCircle,
   Loader2,
   AlertCircle,
+  LineChart as LineChartIcon,
+  BarChart3,
+  PieChart as PieChartIcon,
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Cell,
+  Pie,
+  BarChart,
+  Bar,
+} from 'recharts';
 
 interface AdminStats {
   totalUsers: number;
@@ -48,9 +65,34 @@ interface RecentOrder {
   userEmail: string;
 }
 
+interface AnalyticsData {
+  revenueData: Array<{
+    date: string;
+    revenue: number;
+    orders: number;
+  }>;
+  topProducts: Array<{
+    name: string;
+    sold: number;
+    revenue: number;
+  }>;
+  categoryData: Array<{
+    name: string;
+    value: number;
+    units: number;
+    color: string;
+  }>;
+  statusData: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [recentVendors, setRecentVendors] = useState<RecentVendor[]>([]);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,26 +100,34 @@ export default function AdminDashboard() {
 
   const fetchDashboard = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/dashboard");
+      const [dashboardResponse, analyticsResponse] = await Promise.all([
+        fetch("/api/admin/dashboard"),
+        fetch("/api/admin/analytics")
+      ]);
 
-      if (response.status === 401) {
+      if (dashboardResponse.status === 401) {
         router.push("/auth/login");
         return;
       }
 
-      if (response.status === 403) {
+      if (dashboardResponse.status === 403) {
         router.push("/");
         return;
       }
 
-      if (!response.ok) {
+      if (!dashboardResponse.ok) {
         throw new Error("Failed to fetch dashboard");
       }
 
-      const data = await response.json();
+      const data = await dashboardResponse.json();
       setStats(data.stats);
       setRecentVendors(data.recentVendors || []);
       setRecentOrders(data.recentOrders || []);
+
+      if (analyticsResponse.ok) {
+        const analyticsData = await analyticsResponse.json();
+        setAnalytics(analyticsData);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard");
     } finally {
@@ -220,6 +270,151 @@ export default function AdminDashboard() {
             </p>
           </div>
         </div>
+
+        {/* Analytics Charts */}
+        {analytics && (
+          <>
+            {/* Revenue Over Time */}
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 mb-8 border border-transparent dark:border-gray-800">
+              <div className="flex items-center mb-4">
+                <LineChartIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Platform Revenue Over Time (Last 30 Days)
+                </h3>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analytics.revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis
+                      dataKey="date"
+                      fontSize={12}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis
+                      fontSize={12}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgb(255 255 255)',
+                        border: '1px solid rgb(229 231 235)',
+                        borderRadius: '6px',
+                        color: 'rgb(17 24 39)'
+                      }}
+                      formatter={(value: number, name: string) => [
+                        name === 'revenue' ? `Rs. ${value.toLocaleString()}` : value,
+                        name === 'revenue' ? 'Revenue' : 'Orders'
+                      ]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 5 }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Top Products and Category Sales */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Top Products Bar Chart */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+                <div className="flex items-center mb-4">
+                  <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Top 10 Products
+                  </h3>
+                </div>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analytics.topProducts} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis
+                        type="number"
+                        fontSize={11}
+                        className="text-gray-600 dark:text-gray-400"
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="name"
+                        fontSize={10}
+                        width={120}
+                        className="text-gray-600 dark:text-gray-400"
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(255 255 255)',
+                          border: '1px solid rgb(229 231 235)',
+                          borderRadius: '6px',
+                          color: 'rgb(17 24 39)'
+                        }}
+                        formatter={(value: number) => [`Rs. ${value.toLocaleString()}`, 'Revenue']}
+                      />
+                      <Bar dataKey="revenue" fill="#10b981" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Sales by Category Pie Chart */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+                <div className="flex items-center mb-4">
+                  <PieChartIcon className="w-5 h-5 text-orange-600 dark:text-orange-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Sales by Category
+                  </h3>
+                </div>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={analytics.categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={110}
+                        paddingAngle={3}
+                        dataKey="value"
+                        label={({name, percent}) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                      >
+                        {analytics.categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(255 255 255)',
+                          border: '1px solid rgb(229 231 235)',
+                          borderRadius: '6px',
+                          color: 'rgb(17 24 39)'
+                        }}
+                        formatter={(value: number) => [`Rs. ${value.toLocaleString()}`, 'Revenue']}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap gap-3 mt-4 justify-center">
+                  {analytics.categoryData.map((item, index) => (
+                    <div key={index} className="flex items-center text-sm">
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {item.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, orderItems, products, vendors } from "@/lib/db/schema";
-import { eq, and, sql, desc } from "drizzle-orm";
-import { getCurrentUser } from "@/lib/auth";
-import { logger } from "@/lib/logger";
+import { orders, orderItems, products } from "@/lib/db/schema";
+import { and, sql, desc } from "drizzle-orm";
+import { verifyAuth } from "@/lib/auth";
 import { STATUS_COLORS } from "@/lib/constants";
 
 function getStatusColor(status: string): string {
@@ -22,67 +21,44 @@ function getCategoryColor(category: string): string {
   return colors[category.toLowerCase()] || '#6b7280';
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const user = await getCurrentUser();
-
-    if (!user) {
+    // Verify admin authentication
+    const authResult = await verifyAuth(request);
+    if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const userId = user.userId || user.id;
-
-    // Get vendor profile
-    const [vendor] = await db
-      .select()
-      .from(vendors)
-      .where(eq(vendors.userId, userId))
-      .limit(1);
-
-    if (!vendor) {
+    // Check if user is admin
+    if (authResult.user.role !== "admin") {
       return NextResponse.json(
-        { error: "Vendor profile not found" },
+        { error: "Forbidden - Admin access required" },
         { status: 403 }
       );
     }
 
-    // Get sales data for the last 30 days
+    // Get revenue data for the last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const salesData = await db
+    const revenueData = await db
       .select({
         date: sql<string>`DATE(${orders.createdAt})`,
-        revenue: sql<number>`SUM(${orderItems.priceAtPurchase} * ${orderItems.quantity})`,
-        orders: sql<number>`COUNT(DISTINCT ${orders.id})`,
+        revenue: sql<number>`SUM(${orders.totalAmount})`,
+        orders: sql<number>`COUNT(*)`,
       })
-      .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
+      .from(orders)
       .where(and(
-        eq(products.vendorId, vendor.id),
         sql`${orders.createdAt} >= ${thirtyDaysAgo}`,
-        eq(orders.paymentStatus, "paid")
+        sql`${orders.paymentStatus} = 'paid'`
       ))
       .groupBy(sql`DATE(${orders.createdAt})`)
       .orderBy(sql`DATE(${orders.createdAt})`);
 
-    // Get order status distribution
-    const statusData = await db
-      .select({
-        status: orders.status,
-        count: sql<number>`COUNT(*)`,
-      })
-      .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .where(eq(products.vendorId, vendor.id))
-      .groupBy(orders.status);
-
-    // Get top products
+    // Get top products across all vendors
     const topProducts = await db
       .select({
         productId: products.id,
@@ -91,17 +67,14 @@ export async function GET() {
         revenue: sql<number>`SUM(${orderItems.priceAtPurchase} * ${orderItems.quantity})`,
       })
       .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .where(and(
-        eq(products.vendorId, vendor.id),
-        eq(orders.paymentStatus, "paid")
-      ))
+      .innerJoin(products, sql`${orderItems.productId} = ${products.id}`)
+      .innerJoin(orders, sql`${orderItems.orderId} = ${orders.id}`)
+      .where(sql`${orders.paymentStatus} = 'paid'`)
       .groupBy(products.id, products.name)
       .orderBy(desc(sql`SUM(${orderItems.priceAtPurchase} * ${orderItems.quantity})`))
-      .limit(5);
+      .limit(10);
 
-    // Get sales by category for this vendor
+    // Get sales by category
     const categoryData = await db
       .select({
         category: products.category,
@@ -109,30 +82,29 @@ export async function GET() {
         revenue: sql<number>`SUM(${orderItems.priceAtPurchase} * ${orderItems.quantity})`,
       })
       .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .where(and(
-        eq(products.vendorId, vendor.id),
-        eq(orders.paymentStatus, "paid")
-      ))
+      .innerJoin(products, sql`${orderItems.productId} = ${products.id}`)
+      .innerJoin(orders, sql`${orderItems.orderId} = ${orders.id}`)
+      .where(sql`${orders.paymentStatus} = 'paid'`)
       .groupBy(products.category)
       .orderBy(desc(sql`SUM(${orderItems.priceAtPurchase} * ${orderItems.quantity})`));
 
-    // Format sales data for charts
-    const formattedSalesData = salesData.map(item => ({
+    // Get order status distribution
+    const statusData = await db
+      .select({
+        status: orders.status,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(orders)
+      .groupBy(orders.status);
+
+    // Format revenue data for line chart
+    const formattedRevenueData = revenueData.map(item => ({
       date: new Date(item.date).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric'
       }),
       revenue: Number(item.revenue),
       orders: item.orders,
-    }));
-
-    // Format status data for pie chart
-    const formattedStatusData = statusData.map(item => ({
-      name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
-      value: item.count,
-      color: getStatusColor(item.status),
     }));
 
     // Format category data for pie chart
@@ -143,21 +115,28 @@ export async function GET() {
       color: getCategoryColor(item.category),
     }));
 
+    // Format status data
+    const formattedStatusData = statusData.map(item => ({
+      name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+      value: item.count,
+      color: getStatusColor(item.status),
+    }));
+
     return NextResponse.json({
-      salesData: formattedSalesData,
-      statusData: formattedStatusData,
-      categoryData: formattedCategoryData,
+      revenueData: formattedRevenueData,
       topProducts: topProducts.map(product => ({
-        name: product.productName.length > 20
-          ? product.productName.substring(0, 20) + '...'
+        name: product.productName.length > 25
+          ? product.productName.substring(0, 25) + '...'
           : product.productName,
         sold: product.totalSold,
         revenue: Number(product.revenue),
       })),
+      categoryData: formattedCategoryData,
+      statusData: formattedStatusData,
     });
 
   } catch (error) {
-    logger.error("Failed to fetch vendor analytics", error);
+    console.error("Error fetching admin analytics:", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics data" },
       { status: 500 }

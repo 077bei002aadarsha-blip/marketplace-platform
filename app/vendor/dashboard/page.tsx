@@ -49,6 +49,12 @@ interface AnalyticsData {
     value: number;
     color: string;
   }>;
+  categoryData: Array<{
+    name: string;
+    value: number;
+    units: number;
+    color: string;
+  }>;
   topProducts: Array<{
     name: string;
     sold: number;
@@ -217,15 +223,16 @@ export default function VendorDashboard() {
 
         {/* Analytics Charts */}
         {analytics && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Sales Trend Chart */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
-              <div className="flex items-center mb-4">
-                <LineChart className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Sales Trend (Last 30 Days)
-                </h3>
-              </div>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Revenue Over Time Chart */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+                <div className="flex items-center mb-4">
+                  <LineChart className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Revenue Over Time (Last 30 Days)
+                  </h3>
+                </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsLineChart data={analytics.salesData}>
@@ -263,51 +270,61 @@ export default function VendorDashboard() {
               </div>
             </div>
 
-            {/* Order Status Distribution */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
-              <div className="flex items-center mb-4">
-                <PieChart className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Order Status Distribution
-                </h3>
-              </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsPieChart>
-                    <Pie
-                      data={analytics.statusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {analytics.statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number) => [value, 'Orders']}
-                    />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {analytics.statusData.map((item, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    <div
-                      className="w-3 h-3 rounded-full mr-2"
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {item.name}: {item.value}
-                    </span>
+              {/* Sales by Category */}
+              {analytics.categoryData && analytics.categoryData.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 border border-transparent dark:border-gray-800">
+                  <div className="flex items-center mb-4">
+                    <PieChart className="w-5 h-5 text-orange-600 dark:text-orange-400 mr-2" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Sales by Category
+                    </h3>
                   </div>
-                ))}
-              </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={analytics.categoryData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={90}
+                          paddingAngle={3}
+                          dataKey="value"
+                          label={({name, percent}) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                        >
+                          {analytics.categoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'rgb(255 255 255)',
+                            border: '1px solid rgb(229 231 235)',
+                            borderRadius: '6px',
+                            color: 'rgb(17 24 39)'
+                          }}
+                          formatter={(value: number) => [`Rs. ${value.toLocaleString()}`, 'Revenue']}
+                        />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-wrap gap-3 mt-4 justify-center">
+                    {analytics.categoryData.map((item, index) => (
+                      <div key={index} className="flex items-center text-sm">
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: item.color }}
+                        ></div>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {item.name}: {item.units} units
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          </>
         )}
 
         {/* Top Products Chart */}
