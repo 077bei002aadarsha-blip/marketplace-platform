@@ -19,12 +19,21 @@ interface Product {
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const initialCategories = Array.from(
+    new Set([
+      ...searchParams.getAll("category"),
+      ...(searchParams.get("categories") || "")
+        .split(",")
+        .filter(Boolean),
+    ])
+  );
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState({
-    categories: (searchParams.get("categories") || "").split(",").filter(Boolean),
+    categories: initialCategories,
     search: searchParams.get("search") || "",
     sortBy: searchParams.get("sortBy") || "newest",
     minPrice: searchParams.get("minPrice") || "",
@@ -58,6 +67,8 @@ function ProductsContent() {
 
       // Update URL
       const newParams = new URLSearchParams();
+      // write both repeated category params and a combined categories for compatibility
+      filters.categories.forEach(cat => newParams.append("category", cat));
       if (filters.categories.length > 0) newParams.set("categories", filters.categories.join(","));
       if (filters.search) newParams.set("search", filters.search);
       if (filters.sortBy && filters.sortBy !== "newest") newParams.set("sortBy", filters.sortBy);
