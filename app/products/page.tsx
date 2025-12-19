@@ -40,6 +40,29 @@ function ProductsContent() {
     maxPrice: searchParams.get("maxPrice") || "",
   });
 
+  // Sync filters when URL search params change (e.g., clicking header category links)
+  useEffect(() => {
+    const nextCategories = Array.from(
+      new Set([
+        ...searchParams.getAll("category"),
+        ...(searchParams.get("categories") || "")
+          .split(",")
+          .filter(Boolean),
+      ])
+    );
+
+    setFilters((prev) => ({
+      ...prev,
+      categories: nextCategories,
+      search: searchParams.get("search") || "",
+      sortBy: searchParams.get("sortBy") || "newest",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+    }));
+
+    setSearchInput(searchParams.get("search") || "");
+  }, [searchParams]);
+
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
