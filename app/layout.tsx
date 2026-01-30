@@ -4,6 +4,7 @@ import "./globals.css";
 import "@/lib/suppress-hydration-warnings";
 import Navbar from "@/components/Navbar";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function RootLayout({
                 © 2025 Luga Marketplace. All rights reserved.
               </div>
             </footer>
+        <SpeedInsights />
       </body>
     </html>
   );
